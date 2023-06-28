@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poem Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background-image: url("https://images.pexels.com/photos/459335/pexels-photo-459335.jpeg?auto=compress&cs=tinysrgb&w=600");
+      }
+      .container {
+        margin-top: 50px;
+        text-align: center;
+      }
+
+      h1 {
+        color: #2b2d42;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .form-group label {
+        color: #360404;
+        font-size: 1.5rem;
+        font-weight: bolder;
+      }
+
+      .form-control {
+        border-radius: 0;
+        border: 2px solid #2b2d42;
+        color: #2b2d42;
+      }
+
+      .btn-primary {
+        background-color: #2b2d42;
+        border-color: #2b2d42;
+      }
+
+      .btn-primary:hover {
+        background-color: #1d1f2f;
+        border-color: #1d1f2f;
+      }
+
+      .alert-danger {
+        background-color: #ef233c;
+        color: #fff;
+        border-color: #ef233c;
+      }
+
+      #poemResult {
+        margin-top: 2rem;
+        background-image: url("https://images.pexels.com/photos/1762851/pexels-photo-1762851.jpeg?auto=compress&cs=tinysrgb&w=600");
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      #poemText {
+        font-size: 1.2rem;
+        white-space: pre-wrap;
+        color: #030520;
+        font-weight: bolder;
+      }
+
+      #goBackButton {
+        margin: 1rem 0;
+        background-color: #2b2d42;
+        border-color: #2b2d42;
+      }
+
+      #goBackButton:hover {
+        background-color: #1d1f2f;
+        border-color: #1d1f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center">Poem Generator</h1>
+      <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+      <form id="poemForm" class="mt-4">
+        <div class="form-group">
+          <label for="poemTopic">Enter the poem topic:</label>
+          <input
+            type="text"
+            id="poemTopic"
+            name="poemTopic"
+            class="form-control"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Poem</button>
+      </form>
+      <div id="poemResult" class="mt-4 d-none">
+        <h2 id="poem_heading"></h2>
+        <pre id="poemText"></pre>
+        <button id="goBackButton" class="btn btn-secondary">Clear</button>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        const errorAlert = $("#errorAlert");
+        const poemForm = $("#poemForm");
+        const poemTopicInput = $("#poemTopic");
+        const poemResult = $("#poemResult");
+        const poemText = $("#poemText");
+        const goBackButton = $("#goBackButton");
+        const poem_heading = $("#poem_heading");
+
+        poemForm.submit((event) => {
+          event.preventDefault();
+
+          errorAlert.addClass("d-none");
+          poemResult.addClass("d-none");
+
+          const poemTopic = poemTopicInput.val();
+
+          if (poemTopic.trim().length === 0) {
+            errorAlert.text("Please enter a valid topic").removeClass("d-none");
+            return;
+          }
+
+          poem_heading.text(`Poem on ${poemTopic}`);
+
+          $.ajax({
+            url: "/generate-poem",
+            method: "POST",
+            data: JSON.stringify({ poemTopic }),
+            contentType: "application/json",
+            success: (response) => {
+              poemText.text(response.poem);
+              poemResult.removeClass("d-none");
+            },
+            error: (error) => {
+              errorAlert.text(error.responseJSON.error).removeClass("d-none");
+            },
+          });
+        });
+
+        goBackButton.click(() => {
+          poemForm.trigger("reset");
+          poemResult.addClass("d-none");
+          errorAlert.addClass("d-none");
+        });
+      });
+    </script>
+  </body>
+</html>
